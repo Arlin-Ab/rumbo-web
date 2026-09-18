@@ -62,6 +62,7 @@ export interface RegisterPayload {
   email: string;
   password: string;
   role: "institucion" | "empresa";
+  codigo_institucional: string;
 }
 
 export interface KpisData {
