@@ -1,35 +1,90 @@
+import { BarChart3, Compass, LogOut, Menu, Store, Users, X } from "lucide-react";
+import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 
-export default function PanelLayout() {
-  const { logout } = useAuth();
+const NAV_ITEMS = [
+  { to: "/panel/kpis", label: "KPIs", icon: BarChart3 },
+  { to: "/panel/talento", label: "Pool de talento", icon: Users },
+  { to: "/panel/marketplace", label: "Marketplace", icon: Store },
+];
 
-  const linkStyle = ({ isActive }: { isActive: boolean }) => ({
-    display: "block",
-    padding: "10px 16px",
-    borderRadius: 8,
-    textDecoration: "none",
-    color: isActive ? "#06210f" : "#334155",
-    background: isActive ? "#22c55e" : "transparent",
-    fontWeight: 600,
-  });
+export default function PanelLayout() {
+  const { user, role, logout } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <aside style={{ width: 220, borderRight: "1px solid #e2e8f0", padding: 24 }}>
-        <strong style={{ display: "block", marginBottom: 24, fontSize: 18 }}>Rumbo — Panel</strong>
+    <div className="panel-shell">
+      <header className="panel-topbar">
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Compass size={20} aria-hidden="true" />
+          <strong>Rumbo</strong>
+        </div>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Abrir menú de navegación"
+          aria-expanded={mobileOpen}
+        >
+          <Menu size={20} aria-hidden="true" />
+        </button>
+      </header>
+
+      {mobileOpen && (
+        <div className="panel-overlay" onClick={() => setMobileOpen(false)} aria-hidden="true" />
+      )}
+
+      <aside className={`panel-sidebar ${mobileOpen ? "panel-sidebar-open" : ""}`}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Compass size={20} aria-hidden="true" />
+            <strong style={{ fontSize: "1.125rem" }}>Rumbo — Panel</strong>
+          </div>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm panel-close-btn"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Cerrar menú"
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="card" style={{ padding: 12, marginBottom: 20 }}>
+          <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem" }}>
+            {user?.nombre ?? "Cargando..."}
+          </p>
+          <p className="text-muted text-sm" style={{ margin: 0 }}>
+            {role === "empresa" ? "Cuenta empresa" : "Cuenta institución"}
+          </p>
+        </div>
+
         <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <NavLink to="/panel/kpis" style={linkStyle}>KPIs</NavLink>
-          <NavLink to="/panel/talento" style={linkStyle}>Pool de talento</NavLink>
-          <NavLink to="/panel/marketplace" style={linkStyle}>Marketplace</NavLink>
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) => `panel-nav-link ${isActive ? "panel-nav-link-active" : ""}`}
+              onClick={() => setMobileOpen(false)}
+            >
+              <Icon size={18} aria-hidden="true" />
+              {label}
+            </NavLink>
+          ))}
         </nav>
-        <button className="btn btn-secondary" style={{ marginTop: 32 }} onClick={logout}>
+
+        <button className="btn btn-ghost" style={{ marginTop: 24, color: "var(--color-destructive)" }} onClick={logout}>
+          <LogOut size={18} aria-hidden="true" />
           Cerrar sesión
         </button>
       </aside>
-      <main className="container" style={{ flex: 1, padding: 32 }}>
-        <Outlet />
+
+      <main className="panel-main">
+        <div className="container" style={{ paddingTop: 32, paddingBottom: 48 }}>
+          <Outlet />
+        </div>
       </main>
     </div>
   );

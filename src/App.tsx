@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Kpis from "./pages/panel/Kpis";
 import Marketplace from "./pages/panel/Marketplace";
 import PanelLayout from "./pages/panel/PanelLayout";
@@ -19,6 +20,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route
         path="/panel"
         element={

@@ -1,99 +1,138 @@
-import { useEffect, useState } from "react";
+import { AlertCircle, CalendarClock, Handshake, TrendingDown, TrendingUp, Users } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 
-import { api } from "../../api/client";
+import { api, ApiError, KpisData } from "../../api/client";
 
-interface KpisData {
-  resumen: {
-    usuarios_activos: number;
-    retencion_30_dias_pct: number;
-    tasa_abandono_pct: number;
-    tiempo_promedio_primera_entrevista_dias: number;
-    tiempo_promedio_primer_cliente_dias: number;
-  };
-  bienestar_antes_despues: { mes: string; antes: number; despues: number }[];
-  usuarios_por_ruta: { ruta: string; usuarios: number }[];
-  usuarios_activos_por_mes: { mes: string; activos: number }[];
-}
+const RUTA_COLORS = ["#0891b2", "#059669", "#22d3ee"];
 
 export default function Kpis() {
   const [data, setData] = useState<KpisData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
+    setError(null);
     api
       .kpis()
-      .then((res) => setData(res as KpisData))
-      .catch((err) => setError(err instanceof Error ? err.message : "Error al cargar KPIs"));
+      .then(setData)
+      .catch((err) => setError(err instanceof ApiError ? err.message : "Error al cargar los KPIs"))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (error) return <p style={{ color: "#dc2626" }}>{error}</p>;
-  if (!data) return <p>Cargando KPIs...</p>;
+  useEffect(() => {
+    load();
+  }, [load]);
 
+  if (loading) return <KpisSkeleton />;
+
+  if (error) {
+    return (
+      <div className="form-alert" role="alert" style={{ maxWidth: 480 }}>
+        <AlertCircle size={18} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
+        <div>
+          <p style={{ margin: "0 0 8px" }}>{error}</p>
+          <button className="btn btn-secondary btn-sm" onClick={load}>
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
   const { resumen } = data;
 
   return (
     <div>
       <h1>Panel de KPIs institucional</h1>
+      <p className="text-muted" style={{ marginBottom: 32 }}>
+        Datos de ejemplo para la demo, con la misma forma que tendrían los datos reales.
+      </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 32 }}>
-        <MetricCard label="Usuarios activos" value={resumen.usuarios_activos.toString()} />
-        <MetricCard label="Retención 30 días" value={`${resumen.retencion_30_dias_pct}%`} />
-        <MetricCard label="Tasa de abandono" value={`${resumen.tasa_abandono_pct}%`} />
-        <MetricCard label="Días a 1ra entrevista" value={resumen.tiempo_promedio_primera_entrevista_dias.toString()} />
-        <MetricCard label="Días a 1er cliente" value={resumen.tiempo_promedio_primer_cliente_dias.toString()} />
+      <div className="grid-metrics" style={{ marginBottom: 32 }}>
+        <MetricCard icon={Users} label="Usuarios activos" value={resumen.usuarios_activos.toString()} />
+        <MetricCard icon={TrendingUp} label="Retención 30 días" value={`${resumen.retencion_30_dias_pct}%`} tone="accent" />
+        <MetricCard icon={TrendingDown} label="Tasa de abandono" value={`${resumen.tasa_abandono_pct}%`} tone="destructive" />
+        <MetricCard
+          icon={CalendarClock}
+          label="Días a 1ra entrevista"
+          value={resumen.tiempo_promedio_primera_entrevista_dias.toString()}
+        />
+        <MetricCard
+          icon={Handshake}
+          label="Días a 1er cliente"
+          value={resumen.tiempo_promedio_primer_cliente_dias.toString()}
+        />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
+      <div className="grid-charts">
         <div className="card">
           <h3>Bienestar antes / después</h3>
+          <p className="text-muted text-sm">Escala auto-reportada de 1 (bajo) a 5 (alto), por mes.</p>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={data.bienestar_antes_despues}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="mes" />
-              <YAxis domain={[0, 5]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="mes" stroke="#64748b" />
+              <YAxis domain={[0, 5]} stroke="#64748b" />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="antes" stroke="#94a3b8" />
-              <Line type="monotone" dataKey="despues" stroke="#22c55e" />
+              <Line type="monotone" dataKey="antes" name="Antes" stroke="#94a3b8" strokeWidth={2} />
+              <Line type="monotone" dataKey="despues" name="Después" stroke="#059669" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="card">
           <h3>Usuarios activos por mes</h3>
+          <p className="text-muted text-sm">Cantidad de jóvenes activos en la plataforma.</p>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={data.usuarios_activos_por_mes}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="mes" />
-              <YAxis />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="mes" stroke="#64748b" />
+              <YAxis stroke="#64748b" />
               <Tooltip />
-              <Bar dataKey="activos" fill="#22c55e" />
+              <Bar dataKey="activos" name="Activos" fill="#0891b2" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="card">
           <h3>Usuarios por ruta</h3>
+          <p className="text-muted text-sm">Tradicional, freelance, o ambas.</p>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={data.usuarios_por_ruta}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ruta" />
-              <YAxis />
+            <PieChart>
+              <Pie
+                data={data.usuarios_por_ruta}
+                dataKey="usuarios"
+                nameKey="ruta"
+                innerRadius={60}
+                outerRadius={90}
+                paddingAngle={2}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {data.usuarios_por_ruta.map((entry, index) => (
+                  <Cell key={entry.ruta} fill={RUTA_COLORS[index % RUTA_COLORS.length]} />
+                ))}
+              </Pie>
               <Tooltip />
-              <Bar dataKey="usuarios" fill="#0ea5e9" />
-            </BarChart>
+              <Legend />
+            </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -101,11 +140,57 @@ export default function Kpis() {
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string }) {
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+  tone = "primary",
+}: {
+  icon: typeof Users;
+  label: string;
+  value: string;
+  tone?: "primary" | "accent" | "destructive";
+}) {
+  const toneColor =
+    tone === "accent" ? "var(--color-success)" : tone === "destructive" ? "var(--color-destructive)" : "var(--color-primary)";
+
   return (
     <div className="card">
-      <p style={{ margin: 0, color: "#64748b", fontSize: 13 }}>{label}</p>
-      <p style={{ margin: "4px 0 0", fontSize: 28, fontWeight: 700 }}>{value}</p>
+      <span className="icon-badge" style={{ color: toneColor, marginBottom: 12 }}>
+        <Icon size={18} aria-hidden="true" />
+      </span>
+      <p className="text-muted text-sm" style={{ margin: 0 }}>
+        {label}
+      </p>
+      <p style={{ margin: "4px 0 0", fontSize: "1.75rem", fontWeight: 700, color: "var(--color-foreground)" }}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function KpisSkeleton() {
+  return (
+    <div>
+      <div className="skeleton" style={{ height: 32, width: 260, marginBottom: 12 }} />
+      <div className="skeleton" style={{ height: 16, width: 360, marginBottom: 32 }} />
+      <div className="grid-metrics" style={{ marginBottom: 32 }}>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div className="card" key={i}>
+            <div className="skeleton" style={{ height: 36, width: 36, borderRadius: 8, marginBottom: 12 }} />
+            <div className="skeleton" style={{ height: 12, width: "70%", marginBottom: 8 }} />
+            <div className="skeleton" style={{ height: 24, width: "40%" }} />
+          </div>
+        ))}
+      </div>
+      <div className="grid-charts">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div className="card" key={i}>
+            <div className="skeleton" style={{ height: 16, width: "50%", marginBottom: 16 }} />
+            <div className="skeleton" style={{ height: 260, width: "100%" }} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
