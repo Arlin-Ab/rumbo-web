@@ -1,18 +1,21 @@
-import { BarChart3, Compass, LogOut, Menu, Store, Users, X } from "lucide-react";
+import { BarChart3, Briefcase, Compass, LineChart, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 
+import ChatbotAsistente from "../../components/ChatbotAsistente";
 import { useAuth } from "../../context/AuthContext";
-
-const NAV_ITEMS = [
-  { to: "/panel/kpis", label: "KPIs", icon: BarChart3 },
-  { to: "/panel/talento", label: "Pool de talento", icon: Users },
-  { to: "/panel/marketplace", label: "Marketplace", icon: Store },
-];
 
 export default function PanelLayout() {
   const { user, role, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navItems = [
+    { to: "/panel/kpis", label: "KPIs", icon: BarChart3 },
+    { to: "/panel/demanda", label: "Demanda y predicción", icon: LineChart },
+    ...(role === "empresa" || role === "institucion"
+      ? [{ to: "/panel/vacantes", label: "Vacantes", icon: Briefcase }]
+      : []),
+  ];
 
   return (
     <div className="panel-shell">
@@ -62,7 +65,7 @@ export default function PanelLayout() {
         </div>
 
         <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+          {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
@@ -86,6 +89,8 @@ export default function PanelLayout() {
           <Outlet />
         </div>
       </main>
+
+      {(role === "empresa" || role === "institucion") && <ChatbotAsistente />}
     </div>
   );
 }

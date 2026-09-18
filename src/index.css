@@ -1,22 +1,22 @@
 :root {
-  --color-primary: #0891b2;
-  --color-primary-hover: #0e7490;
+  --color-primary: #1e40af;
+  --color-primary-hover: #1e3a8a;
   --color-on-primary: #ffffff;
-  --color-secondary: #22d3ee;
-  --color-accent: #059669;
-  --color-accent-hover: #047857;
+  --color-secondary: #2563eb;
+  --color-accent: #b91c1c;
+  --color-accent-hover: #991b1b;
   --color-background: #f8fafc;
   --color-surface: #ffffff;
-  --color-surface-muted: #eef6f8;
-  --color-foreground: #0f2b33;
+  --color-surface-muted: #eef2fb;
+  --color-foreground: #0f172a;
   --color-text: #334155;
   --color-text-muted: #64748b;
-  --color-border: #dbe6ea;
+  --color-border: #dbe3ef;
   --color-destructive: #dc2626;
   --color-destructive-bg: #fef2f2;
   --color-success: #059669;
   --color-success-bg: #ecfdf5;
-  --color-ring: #0891b2;
+  --color-ring: #1e40af;
 
   --font-heading: "Lora", Georgia, serif;
   --font-body: "Raleway", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -32,45 +32,47 @@
 }
 
 :root[data-theme="dark"] {
-  --color-primary: #22d3ee;
-  --color-primary-hover: #67e8f9;
-  --color-on-primary: #05242c;
-  --color-accent: #34d399;
-  --color-accent-hover: #6ee7b7;
-  --color-background: #0b1f26;
-  --color-surface: #102b33;
-  --color-surface-muted: #143540;
-  --color-foreground: #eaf7f8;
-  --color-text: #cfe4e7;
-  --color-text-muted: #91acb1;
-  --color-border: #1e4550;
+  --color-primary: #3b82f6;
+  --color-primary-hover: #60a5fa;
+  --color-on-primary: #ffffff;
+  --color-secondary: #60a5fa;
+  --color-accent: #f87171;
+  --color-accent-hover: #fca5a5;
+  --color-background: #0b1220;
+  --color-surface: #111a2c;
+  --color-surface-muted: #16213a;
+  --color-foreground: #eef2ff;
+  --color-text: #cbd5e1;
+  --color-text-muted: #8b98ae;
+  --color-border: #253355;
   --color-destructive: #f87171;
   --color-destructive-bg: #2a1414;
   --color-success: #34d399;
   --color-success-bg: #0f2b22;
-  --color-ring: #22d3ee;
+  --color-ring: #3b82f6;
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-primary: #22d3ee;
-    --color-primary-hover: #67e8f9;
-    --color-on-primary: #05242c;
-    --color-accent: #34d399;
-    --color-accent-hover: #6ee7b7;
-    --color-background: #0b1f26;
-    --color-surface: #102b33;
-    --color-surface-muted: #143540;
-    --color-foreground: #eaf7f8;
-    --color-text: #cfe4e7;
-    --color-text-muted: #91acb1;
-    --color-border: #1e4550;
+    --color-primary: #3b82f6;
+    --color-primary-hover: #60a5fa;
+    --color-on-primary: #ffffff;
+    --color-secondary: #60a5fa;
+    --color-accent: #f87171;
+    --color-accent-hover: #fca5a5;
+    --color-background: #0b1220;
+    --color-surface: #111a2c;
+    --color-surface-muted: #16213a;
+    --color-foreground: #eef2ff;
+    --color-text: #cbd5e1;
+    --color-text-muted: #8b98ae;
+    --color-border: #253355;
     --color-destructive: #f87171;
     --color-destructive-bg: #2a1414;
     --color-success: #34d399;
     --color-success-bg: #0f2b22;
-    --color-ring: #22d3ee;
+    --color-ring: #3b82f6;
     color-scheme: dark;
   }
 }
@@ -327,6 +329,11 @@ button {
   border-color: transparent;
 }
 
+.badge-muted {
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
 /* ---------- Forms ---------- */
 .field {
   display: flex;
@@ -366,7 +373,7 @@ button {
 
 .input:focus-visible {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.18);
 }
 
 .input-with-action {

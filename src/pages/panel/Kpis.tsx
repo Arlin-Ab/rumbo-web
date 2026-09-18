@@ -18,7 +18,11 @@ import {
 
 import { api, ApiError, KpisData } from "../../api/client";
 
-const RUTA_COLORS = ["#0891b2", "#059669", "#22d3ee"];
+const RUTA_COLORS = ["#1e40af", "#b91c1c", "#2563eb"];
+
+function formatMetric(value: number | null, suffix = ""): string {
+  return value === null ? "Sin datos" : `${value}${suffix}`;
+}
 
 export default function Kpis() {
   const [data, setData] = useState<KpisData | null>(null);
@@ -62,22 +66,33 @@ export default function Kpis() {
     <div>
       <h1>Panel de KPIs institucional</h1>
       <p className="text-muted" style={{ marginBottom: 32 }}>
-        Datos de ejemplo para la demo, con la misma forma que tendrían los datos reales.
+        Datos en tiempo real de la plataforma. Algunas métricas muestran "Sin datos" hasta que haya
+        suficiente historial acumulado (ej. retención a 30 días).
       </p>
 
       <div className="grid-metrics" style={{ marginBottom: 32 }}>
         <MetricCard icon={Users} label="Usuarios activos" value={resumen.usuarios_activos.toString()} />
-        <MetricCard icon={TrendingUp} label="Retención 30 días" value={`${resumen.retencion_30_dias_pct}%`} tone="accent" />
-        <MetricCard icon={TrendingDown} label="Tasa de abandono" value={`${resumen.tasa_abandono_pct}%`} tone="destructive" />
+        <MetricCard
+          icon={TrendingUp}
+          label="Retención 30 días"
+          value={formatMetric(resumen.retencion_30_dias_pct, "%")}
+          tone="accent"
+        />
+        <MetricCard
+          icon={TrendingDown}
+          label="Tasa de abandono"
+          value={formatMetric(resumen.tasa_abandono_pct, "%")}
+          tone="destructive"
+        />
         <MetricCard
           icon={CalendarClock}
           label="Días a 1ra entrevista"
-          value={resumen.tiempo_promedio_primera_entrevista_dias.toString()}
+          value={formatMetric(resumen.tiempo_promedio_primera_entrevista_dias)}
         />
         <MetricCard
           icon={Handshake}
-          label="Días a 1er cliente"
-          value={resumen.tiempo_promedio_primer_cliente_dias.toString()}
+          label="Días a 1ra práctica freelance"
+          value={formatMetric(resumen.tiempo_promedio_primera_practica_freelance_dias)}
         />
       </div>
 
@@ -107,7 +122,7 @@ export default function Kpis() {
               <XAxis dataKey="mes" stroke="#64748b" />
               <YAxis stroke="#64748b" />
               <Tooltip />
-              <Bar dataKey="activos" name="Activos" fill="#0891b2" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="activos" name="Activos" fill="#1e40af" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

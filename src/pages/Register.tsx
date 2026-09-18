@@ -13,7 +13,6 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<Role>("institucion");
-  const [codigo, setCodigo] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -30,7 +29,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await api.register({ nombre, email, password, role, codigo_institucional: codigo });
+      await api.register({ nombre, email, password, role });
       const res = await api.login(email, password);
       login(res.access_token, res.role);
       navigate("/panel/kpis");
@@ -52,9 +51,6 @@ export default function Register() {
       </Link>
 
       <h1>Registrar institución/empresa</h1>
-      <p className="text-muted">
-        El registro requiere el código de invitación que te compartió el equipo de Rumbo.
-      </p>
 
       <form onSubmit={handleSubmit} className="card" style={{ display: "flex", flexDirection: "column", gap: 16 }} noValidate>
         {error && (
@@ -135,22 +131,6 @@ export default function Register() {
             </button>
           </div>
           <span className="help-text">Mínimo 8 caracteres.</span>
-        </div>
-
-        <div className="field">
-          <label className="label" htmlFor="reg-codigo">
-            Código de invitación
-            <span className="required-mark">*</span>
-          </label>
-          <input
-            id="reg-codigo"
-            type="text"
-            required
-            value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
-            className="input"
-          />
-          <span className="help-text">Te lo comparte el equipo de Rumbo al validar tu institución/empresa.</span>
         </div>
 
         <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
