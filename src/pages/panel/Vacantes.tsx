@@ -6,6 +6,7 @@ import {
   ChevronUp,
   Clock,
   DollarSign,
+  Download,
   FileText,
   Globe2,
   Info,
@@ -69,6 +70,9 @@ function VacantesPublicador() {
   const [postulantes, setPostulantes] = useState<Record<string, PostulanteOut[]>>({});
   const [postulantesLoading, setPostulantesLoading] = useState<string | null>(null);
   const [postulantesError, setPostulantesError] = useState<string | null>(null);
+
+  const [descargandoCvId, setDescargandoCvId] = useState<string | null>(null);
+  const [descargarCvError, setDescargarCvError] = useState<{ postulacionId: string; mensaje: string } | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -147,6 +151,27 @@ function VacantesPublicador() {
       setPostulantesError(err instanceof ApiError ? err.message : "No se pudieron cargar los postulantes");
     } finally {
       setPostulantesLoading(null);
+    }
+  }
+
+  async function handleDescargarCv(vacanteId: string, postulante: PostulanteOut) {
+    setDescargarCvError(null);
+    setDescargandoCvId(postulante.postulacion_id);
+    try {
+      const { blob, filename } = await api.descargarCvPostulante(vacanteId, postulante.joven_id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setDescargarCvError({
+        postulacionId: postulante.postulacion_id,
+        mensaje: err instanceof ApiError ? err.message : "No se pudo descargar el CV",
+      });
+    } finally {
+      setDescargandoCvId(null);
     }
   }
 
@@ -481,6 +506,23 @@ function VacantesPublicador() {
                                 day: "numeric",
                               })}
                             </p>
+                            {p.tiene_cv && (
+                              <button
+                                type="button"
+                                className="btn btn-secondary btn-sm"
+                                style={{ marginTop: 6 }}
+                                disabled={descargandoCvId === p.postulacion_id}
+                                onClick={() => handleDescargarCv(v.id, p)}
+                              >
+                                <Download size={14} aria-hidden="true" />
+                                {descargandoCvId === p.postulacion_id ? "Descargando..." : "Descargar CV"}
+                              </button>
+                            )}
+                            {descargarCvError?.postulacionId === p.postulacion_id && (
+                              <p className="text-sm" style={{ color: "var(--color-destructive)", margin: "4px 0 0" }}>
+                                {descargarCvError.mensaje}
+                              </p>
+                            )}
                             {p.experiencia.length > 0 && (
                               <div style={{ marginTop: 8 }}>
                                 <p

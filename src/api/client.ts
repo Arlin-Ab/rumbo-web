@@ -43,6 +43,35 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return response.json();
 }
 
+function nombreDesdeContentDisposition(disposition: string | null, fallback: string): string {
+  const match = disposition?.match(/filename="?([^";]+)"?/);
+  return match ? match[1] : fallback;
+}
+
+async function requestBlob(path: string, fallbackFilename: string): Promise<{ blob: Blob; filename: string }> {
+  const token = getToken();
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, { headers });
+  } catch {
+    throw new ApiError("No se pudo conectar con el servidor. Verificá que el backend esté corriendo.", 0);
+  }
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new ApiError(body.detail || `Error ${response.status}`, response.status);
+  }
+
+  const blob = await response.blob();
+  const filename = nombreDesdeContentDisposition(response.headers.get("Content-Disposition"), fallbackFilename);
+  return { blob, filename };
+}
+
 export interface LoginResponse {
   access_token: string;
   token_type: string;
@@ -139,6 +168,7 @@ export interface PostulanteOut {
   ruta_preferida: string | null;
   ciudad: string | null;
   experiencia: ExperienciaOut[];
+  tiene_cv: boolean;
 }
 
 export interface DemandaMes {
@@ -182,6 +212,8 @@ export const api = {
     }),
   eliminarVacante: (id: string) => request<void>(`/vacantes/${id}`, { method: "DELETE" }),
   postulantesVacante: (id: string) => request<PostulanteOut[]>(`/vacantes/${id}/postulantes`),
+  descargarCvPostulante: (vacanteId: string, jovenId: string) =>
+    requestBlob(`/vacantes/${vacanteId}/postulantes/${jovenId}/cv`, "cv.pdf"),
   demandaHistorica: (area: string, pais: string) =>
     request<DemandaMes[]>(`/institucion/demanda-historica?area=${encodeURIComponent(area)}&pais=${encodeURIComponent(pais)}`),
   prediccionDemanda: (area: string, pais: string) =>
